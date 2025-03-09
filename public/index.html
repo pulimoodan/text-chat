@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Editor</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    :root {
+      --background: #1e1e1e;
+      --text: #e0e0e0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      background-color: var(--background);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #editor {
+      width: 100%;
+      height: 100vh;
+      padding: 40px;
+      outline: none;
+      border: none;
+      resize: none;
+      font-size: 16px;
+      line-height: 1.6;
+      background-color: var(--background);
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <textarea id="editor"></textarea>
+
+  <script>
+    const pathParts = window.location.pathname.split("/");
+    let sessionKey = pathParts[1]; // Get session key from URL
+
+    if (!sessionKey) {
+      sessionKey = Math.random().toString(36).substring(2, 10); // Generate a random key
+      window.location.href = `/${sessionKey}`;
+    }
+
+    const socket = io({ query: { sessionKey } });
+    const editor = document.getElementById('editor');
+    let localChange = false;
+
+    // Handle input events
+    editor.addEventListener('input', () => {
+      localChange = true;
+      socket.emit('session-update', editor.value);
+    });
+
+    // Receive and update editor content
+    socket.on('session-content', (content) => {
+      if (!localChange) {
+        editor.value = content;
+      }
+      localChange = false;
+    });
+
+    // Request initial content
+    socket.on('connect', () => {
+      socket.emit('get-content');
+    });
+  </script>
+</body>
+</html>
+
