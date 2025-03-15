@@ -52,6 +52,16 @@ Start the server
   npm run dev
 ```
 
+## Usage/Examples
+
+Just open the app with any secret keys after the `/`
+
+https://example.com/my-secret-key
+
+This will create a new session.
+
+If we open the root URL, it will get redirected to a new random session key
+
 
 ## Production
 
